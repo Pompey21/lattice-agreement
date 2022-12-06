@@ -6,6 +6,7 @@
 
 #include "parser.hpp"
 #include "udp.hpp"
+#include "beb.hpp"
 #include "hello.h"
 #include <signal.h>
 
@@ -84,7 +85,14 @@ int main(int argc, char **argv) {
   std::cout << "Broadcasting and delivering messages...\n\n";
 
   std::ifstream config_file(parser.configPath());
-  config_file >> m >> i;
+
+  // For Perfect Links:
+  // config_file >> m >> i;
+
+  // For Best Effort Broadcast:
+  config_file >> m;
+
+
   config_file.close();
 //==================================================================================================
 //==================================================================================================
@@ -94,10 +102,18 @@ int main(int argc, char **argv) {
   // start the socket -> we create two threads, one for sending and one for receiving
   udpSocket.create();
 
+  // For Perfect Links
   // if this is not the receiving process, then it can broadcast the messages!
-  if (parser.id() != i) {
-    for (unsigned int message=1;message<=m;message ++) {
-      udpSocket.enque(hosts[i-1], message);      
+  // if (parser.id() != i) {
+  //   for (unsigned int message=1;message<=m;message ++) {
+  //     udpSocket.enque(hosts[i-1], message);      
+  //   }
+  // }
+
+  // For Best Effort Broadcast
+  for (unsigned int message=1; message<=m; message++) {
+    for (auto &host : hosts) {
+      udpSocket.enque(host, message);
     }
   }
  

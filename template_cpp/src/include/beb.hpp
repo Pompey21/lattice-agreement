@@ -1,10 +1,15 @@
 #pragma once
 
 #include <sys/socket.h>
+#include <iostream>
 #include <arpa/inet.h>
 #include <mutex>
+#include <set>
 #include "parser.hpp"
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
 #include "message.hpp"
+#endif
 
 /*
 Idea is to create an infrastructure for a basic UDP socket that can send and receive messages.
@@ -24,7 +29,7 @@ They will all be implemented in the .cpp file, but will be declared here.
 class BEBSocket {
     public:
         BEBSocket(){};
-        BEBSocket(const UDPSocket &);
+        BEBSocket(const BEBSocket &);
         BEBSocket(Parser::Host localhost);
 
         void create();
@@ -39,8 +44,10 @@ class BEBSocket {
         unsigned long msg_id;
 
         std::vector<std::string> logs;
+        std::set<std::string> logs_set;
         std::vector<Msg> message_queue;
         std::mutex message_queue_lock;
+        std::set<std::string> broadcasted_messages;
 
         std::vector<Msg> received_messages;
         int setup_socket(Parser::Host host);

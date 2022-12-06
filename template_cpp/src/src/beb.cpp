@@ -2,7 +2,7 @@
 #include <chrono>         // std::chrono::seconds
 #include <algorithm>
 
-#include "udp.hpp"
+#include "beb.hpp"
 
 /*
 // References and Resources: 
@@ -35,25 +35,24 @@ Close socket descriptor and exit.
 
 
 
-UDPSocket::UDPSocket(Parser::Host localhost) {
+BEBSocket::BEBSocket(Parser::Host localhost) {
     this->localhost = localhost;
     sockfd = this->setup_socket(localhost);
     msg_id = 0;
 }
 
 // Creating two threads per socket, one for sending and one for receiving messages.
-void UDPSocket::create() {
-    std::thread send_thread(&UDPSocket::send_message, this);
-    std::thread receive_thread(&UDPSocket::receive_message, this);
+void BEBSocket::create() {
+    std::thread send_thread(&BEBSocket::send_message, this);
+    std::thread receive_thread(&BEBSocket::receive_message, this);
 
     send_thread.detach(); 
     receive_thread.detach(); 
 }
 
-// Setting private parameters of the UDPSocket class.
-UDPSocket& UDPSocket::operator=(const UDPSocket & other) {
+// Setting private parameters of the BEBSocket class.
+BEBSocket& BEBSocket::operator=(const BEBSocket & other) {
     this->logs = other.logs;
-    this->logs_set = other.logs_set;
     this->localhost = other.localhost;
     this->sockfd = other.sockfd;
     this->msg_id = other.msg_id;
@@ -62,7 +61,7 @@ UDPSocket& UDPSocket::operator=(const UDPSocket & other) {
     return *this;
 }
 
-struct sockaddr_in UDPSocket::set_up_destination_address(Parser::Host dest) {
+struct sockaddr_in BEBSocket::set_up_destination_address(Parser::Host dest) {
     struct sockaddr_in destaddr;
     memset(&destaddr, 0, sizeof(destaddr));
     destaddr.sin_family = AF_INET; //IPv4
@@ -71,7 +70,7 @@ struct sockaddr_in UDPSocket::set_up_destination_address(Parser::Host dest) {
     return destaddr;
 }
 
-void UDPSocket::enque(Parser::Host dest, unsigned int msg) {    
+void BEBSocket::enque(Parser::Host dest, unsigned int msg) {    
     struct sockaddr_in destaddr = this->set_up_destination_address(dest);
     struct Msg wrapedMsg = {
         this->localhost,
@@ -88,10 +87,10 @@ void UDPSocket::enque(Parser::Host dest, unsigned int msg) {
 // ensuring the mssage gets broadcasted only once.
     std::string broadcast_to_write = "b " + std::to_string(msg);
     std::set<std::string>::iterator it = logs_set.find(broadcast_to_write);
-    if (it == logs_set.end())
+    if (it == broadcasted_messages.end())
     {
         oss << "b " << msg;
-        logs_set.insert(broadcast_to_write);
+        broadcasted_messages.insert(broadcast_to_write);
         logs.push_back(oss.str());
     }
 
@@ -100,7 +99,7 @@ void UDPSocket::enque(Parser::Host dest, unsigned int msg) {
 }
 
 
-void UDPSocket::send_message() {
+void BEBSocket::send_message() {
     // Reference: https://stackoverflow.com/questions/5249418/warning-use-of-old-style-cast-in-g just try all of them until no error
     bool infinite_loop = true;
     while(infinite_loop) {
@@ -116,7 +115,7 @@ void UDPSocket::send_message() {
 
 // receive() implements reception of both, normal message as well as an acknowledgement!
 
-void UDPSocket::receive_message() {
+void BEBSocket::receive_message() {
     // Reference: https://stackoverflow.com/questions/18670807/sending-and-receiving-stdstring-over-socket
     struct Msg wrapped_message; 
     while (true) {
@@ -142,7 +141,6 @@ void UDPSocket::receive_message() {
                     std::ostringstream oss;
                     oss << "d " << wrapped_message.sender.id << " " << wrapped_message.content;
                     logs.push_back(oss.str());
-                    logs_set.insert(oss.str());
                     // std::cout<< "Received " << wrapped_message.content << " from "<< wrapped_message.sender.id << "\n";
                 }    
                 // send Ack back to sender
@@ -158,7 +156,7 @@ void UDPSocket::receive_message() {
     }
 }
 
-int UDPSocket::setup_socket(Parser::Host host) {
+int BEBSocket::setup_socket(Parser::Host host) {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
         throw std::runtime_error("Socket creation failed");
@@ -175,7 +173,7 @@ int UDPSocket::setup_socket(Parser::Host host) {
     return sockfd;
 }
 
-std::vector<std::string> UDPSocket::get_logs() {
-    std::vector<std::string> result(logs_set.begin(), logs_set.end());
-    return result;
+std::vector<std::string> BEBSocket::get_logs() {
+
+    return this->logs;
 }
