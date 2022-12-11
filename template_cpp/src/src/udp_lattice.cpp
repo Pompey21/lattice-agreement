@@ -1,8 +1,9 @@
 #include<thread>
 #include <chrono>         // std::chrono::seconds
 #include <algorithm>
+#include <set>
 
-#include "beb.hpp"
+#include "udp_lattice.hpp"
 
 /*
 // References and Resources: 
@@ -35,24 +36,25 @@ Close socket descriptor and exit.
 
 
 
-BEBSocket::BEBSocket(Parser::Host localhost) {
+UDPSocket::UDPSocket(Parser::Host localhost) {
     this->localhost = localhost;
     sockfd = this->setup_socket(localhost);
     msg_id = 0;
 }
 
 // Creating two threads per socket, one for sending and one for receiving messages.
-void BEBSocket::create() {
-    std::thread send_thread(&BEBSocket::send_message, this);
-    std::thread receive_thread(&BEBSocket::receive_message, this);
+void UDPSocket::create() {
+    std::thread send_thread(&UDPSocket::send_message, this);
+    std::thread receive_thread(&UDPSocket::receive_message, this);
 
     send_thread.detach(); 
     receive_thread.detach(); 
 }
 
-// Setting private parameters of the BEBSocket class.
-BEBSocket& BEBSocket::operator=(const BEBSocket & other) {
+// Setting private parameters of the UDPSocket class.
+UDPSocket& UDPSocket::operator=(const UDPSocket & other) {
     this->logs = other.logs;
+    this->logs_set = other.logs_set;
     this->localhost = other.localhost;
     this->sockfd = other.sockfd;
     this->msg_id = other.msg_id;
@@ -61,7 +63,7 @@ BEBSocket& BEBSocket::operator=(const BEBSocket & other) {
     return *this;
 }
 
-struct sockaddr_in BEBSocket::set_up_destination_address(Parser::Host dest) {
+struct sockaddr_in UDPSocket::set_up_destination_address(Parser::Host dest) {
     struct sockaddr_in destaddr;
     memset(&destaddr, 0, sizeof(destaddr));
     destaddr.sin_family = AF_INET; //IPv4
@@ -70,7 +72,7 @@ struct sockaddr_in BEBSocket::set_up_destination_address(Parser::Host dest) {
     return destaddr;
 }
 
-void BEBSocket::enque(Parser::Host dest, std::set<int> msg) {    
+void UDPSocket::enque(Parser::Host dest, std::string msg) {    
     struct sockaddr_in destaddr = this->set_up_destination_address(dest);
     struct Msg_Lattice wrapedMsg = {
         this->localhost,
@@ -85,13 +87,12 @@ void BEBSocket::enque(Parser::Host dest, std::set<int> msg) {
     std::ostringstream oss;
 
 // ensuring the mssage gets broadcasted only once.
-    std::string message_str = this->prepare_content_for_print(msg);
-    std::string broadcast_to_write = "b " + message_str; // + std::to_string(msg);
+    std::string broadcast_to_write = "b " + msg;
     std::set<std::string>::iterator it = logs_set.find(broadcast_to_write);
-    if (it == broadcasted_messages.end())
+    if (it == logs_set.end())
     {
-        oss << "b "; // << msg;
-        broadcasted_messages.insert(broadcast_to_write);
+        oss << "b " << msg;
+        logs_set.insert(broadcast_to_write);
         logs.push_back(oss.str());
     }
 
@@ -100,7 +101,7 @@ void BEBSocket::enque(Parser::Host dest, std::set<int> msg) {
 }
 
 
-void BEBSocket::send_message() {
+void UDPSocket::send_message() {
     // Reference: https://stackoverflow.com/questions/5249418/warning-use-of-old-style-cast-in-g just try all of them until no error
     bool infinite_loop = true;
     while(infinite_loop) {
@@ -116,7 +117,7 @@ void BEBSocket::send_message() {
 
 // receive() implements reception of both, normal message as well as an acknowledgement!
 
-void BEBSocket::receive_message() {
+void UDPSocket::receive_message() {
     // Reference: https://stackoverflow.com/questions/18670807/sending-and-receiving-stdstring-over-socket
     struct Msg_Lattice wrapped_message; 
     while (true) {
@@ -140,9 +141,10 @@ void BEBSocket::receive_message() {
                     //otherwise, save it
                     received_messages.push_back(wrapped_message);
                     std::ostringstream oss;
-                    std::string content_str = this->prepare_content_for_print(wrapped_message.content);
-                    oss << "d " << wrapped_message.sender.id << " " << content_str; // << wrapped_message.content;
+                    // oss << "d " << wrapped_message.sender.id << " " << std::endl;//<< wrapped_message.content;
+                    oss << "d " << wrapped_message.content << " " << std::endl;
                     logs.push_back(oss.str());
+                    logs_set.insert(oss.str());
                     // std::cout<< "Received " << wrapped_message.content << " from "<< wrapped_message.sender.id << "\n";
                 }    
                 // send Ack back to sender
@@ -158,7 +160,7 @@ void BEBSocket::receive_message() {
     }
 }
 
-int BEBSocket::setup_socket(Parser::Host host) {
+int UDPSocket::setup_socket(Parser::Host host) {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
         throw std::runtime_error("Socket creation failed");
@@ -175,12 +177,12 @@ int BEBSocket::setup_socket(Parser::Host host) {
     return sockfd;
 }
 
-std::vector<std::string> BEBSocket::get_logs() {
-
-    return this->logs;
+std::vector<std::string> UDPSocket::get_logs() {
+    std::vector<std::string> result(logs_set.begin(), logs_set.end());
+    return result;
 }
 
-std::string BEBSocket::prepare_content_for_print(std::set<int> content) {
+std::string UDPSocket::prepare_content_for_print(std::set<int> content) {
     std::ostringstream oss;
     for (auto & msg : content) {
         oss << msg << " ";

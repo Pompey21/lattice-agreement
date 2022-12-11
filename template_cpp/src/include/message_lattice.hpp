@@ -1,11 +1,12 @@
 #include "parser.hpp"
-#include <set>
+#include <string>
+
 
 struct Msg_Lattice {
     Parser::Host sender;
     Parser::Host receiver;
     unsigned long msg_id;
-    std::vector<int> content;
+    std::string content;
     bool is_ack;
     public:
     bool operator==( const Msg_Lattice& other ) {

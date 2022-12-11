@@ -26,16 +26,16 @@ std::vector<Msg> get_logs() -> gets all the messages that have been received.
 They will all be implemented in the .cpp file, but will be declared here.
 */
 
-class BEBSocket {
+class UDPSocket {
     public:
-        BEBSocket(){};
-        BEBSocket(const BEBSocket &);
-        BEBSocket(Parser::Host localhost);
+        UDPSocket(){};
+        UDPSocket(const UDPSocket &);
+        UDPSocket(Parser::Host localhost);
 
         void create();
-        void enque(Parser::Host dest, std::set<int> msg);
+        void enque(Parser::Host dest, std::string msg);
         std::vector<std::string> get_logs();
-        BEBSocket& operator=(const BEBSocket & other);
+        UDPSocket& operator=(const UDPSocket & other);
 
     private:
     // assignable:
@@ -55,6 +55,6 @@ class BEBSocket {
         
         void send_message();
         void receive_message();
-        
+
         std::string prepare_content_for_print(std::set<int> content);
 };

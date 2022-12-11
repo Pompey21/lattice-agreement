@@ -7,13 +7,14 @@
 #include <vector>
 
 #include "parser.hpp"
-#include "udp.hpp"
-#include "beb.hpp"
+#include "udp_lattice.hpp"
+// #include "beb.hpp"
 #include "hello.h"
 #include <signal.h>
 
 std::ofstream outputFile;
 UDPSocket udpSocket;
+// BEBSocket bebSocket;
 
 static void stop(int) {
   // reset signal handlers to default
@@ -153,8 +154,30 @@ int main(int argc, char **argv) {
 
   std::ifstream config_file(parser.configPath());
 // ===================================================================================================
-  std::vector<std::vector<int>> lines_vector_form;
-  if (config_file.is_open())
+  // std::vector<std::vector<int>> lines_vector_form;
+  // if (config_file.is_open())
+  //   {
+  //       std::string line;
+
+  //       while(getline(config_file, line))
+  //      {
+  //           if(line.size() > 0){
+  //               // vecOfStrs.push_back(str);
+  //               // std::cout << line << std::endl;
+  //               std::vector<int> line_vector_form = split(line);
+  //               lines_vector_form.push_back(line_vector_form);
+  //           }
+  //       }
+  //   }
+  //   else 
+  //   {
+  //       std::cerr << "Couldn't open config file for reading.\n";
+  //   }
+
+    // std::vector<int> numbers = get_numbers(lines_vector_form);
+// ===================================================================================================
+    std::vector<std::string> numbers_strs;
+    if (config_file.is_open())
     {
         std::string line;
 
@@ -163,8 +186,7 @@ int main(int argc, char **argv) {
             if(line.size() > 0){
                 // vecOfStrs.push_back(str);
                 std::cout << line << std::endl;
-                std::vector<int> line_vector_form = split(line);
-                lines_vector_form.push_back(line_vector_form);
+                numbers_strs.push_back(line);
             }
         }
     }
@@ -173,17 +195,15 @@ int main(int argc, char **argv) {
         std::cerr << "Couldn't open config file for reading.\n";
     }
 
-    std::vector<int> numbers = get_numbers(lines_vector_form);
-    std::set<int> numbers_set = get_numbers_2(lines_vector_form);
-    // for (auto it = numbers.begin(); it !=numbers.end(); ++it)
-    //     std::cout << ' ' << *it;
+    std::string system_criteria = numbers_strs[0];
+    numbers_strs = std::vector<std::string>(numbers_strs.begin()+1, numbers_strs.end());
 // ===================================================================================================
 
   // For Perfect Links:
   // config_file >> m >> i;
 
   // For Best Effort Broadcast:
-//   config_file >> m;
+  // config_file >> m;
 
 
   config_file.close();
@@ -195,25 +215,31 @@ int main(int argc, char **argv) {
   // start the socket -> we create two threads, one for sending and one for receiving
   udpSocket.create();
 
-//   // For Perfect Links
-//   // if this is not the receiving process, then it can broadcast the messages!
-//   // if (parser.id() != i) {
-//   //   for (unsigned int message=1;message<=m;message ++) {
-//   //     udpSocket.enque(hosts[i-1], message);      
-//   //   }
-//   // }
+  // For Perfect Links
+  // if this is not the receiving process, then it can broadcast the messages!
+  // if (parser.id() != i) {
+  //   for (unsigned int message=1;message<=m;message ++) {
+  //     udpSocket.enque(hosts[i-1], message);      
+  //   }
+  // }
 
-//   // For Best Effort Broadcast
-//   for (unsigned int message=1; message<=m; message++) {
-//     for (auto &host : hosts) {
-//       udpSocket.enque(host, message);
-//     }
-//   }
+  // For Best Effort Broadcast
+  // for (unsigned int message=1; message<=m; message++) {
+  //   for (auto &host : hosts) {
+  //     udpSocket.enque(host, message);
+  //   }
+  // }
+
+  for (std::string message : numbers_strs) {
+    for (auto &host : hosts) {
+      udpSocket.enque(host, message);
+    }
+  }
  
-//   // process now needs to listen indefinitely - regardless if it broadcast messages before or not!
-//   while (true) {
-//     std::this_thread::sleep_for(std::chrono::hours(1));
-//   }
+  // process now needs to listen indefinitely - regardless if it broadcast messages before or not!
+  while (true) {
+    std::this_thread::sleep_for(std::chrono::hours(1));
+  }
 
   return 0;
 }
