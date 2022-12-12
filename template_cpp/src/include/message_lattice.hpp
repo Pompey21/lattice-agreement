@@ -22,5 +22,9 @@ struct Msg_Lattice {
                         receiver.ip == other.receiver.ip &&
                         receiver.port == other.receiver.port &&
                         msg_id == other.msg_id;
-    }
+        }
+        bool operator!=( const Msg_Lattice& other ) {
+            return !(*this == other);
+        }
+    
 };

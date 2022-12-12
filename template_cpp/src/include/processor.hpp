@@ -7,12 +7,15 @@
 class Processor {
     public:
         Processor(){};
+        Processor(const Processor &);
         Processor(std::vector<Parser::Host> neighbors, Parser::Host localhost);
         // ~Processor();
+        Processor& operator=(const Processor & other);
+
         void create();
 
         void propose(std::set<int> values);
-        void reception(bool is_proposal, bool is_ack, int proposal_num, std::set<int> values);
+        // void reception(bool is_proposal, bool is_ack, int proposal_num, std::set<int> values);
         void vibe_check();
         void send_message(std::string message, Parser::Host host);
         void reception();

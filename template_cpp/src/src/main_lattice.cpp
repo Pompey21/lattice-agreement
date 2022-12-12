@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <sstream>
 
 #include "parser.hpp"
 #include "udp_lattice.hpp"
@@ -12,6 +13,9 @@
 #include "hello.h"
 #include <signal.h>
 #include "processor.hpp"
+
+#define ALL(x) x.begin(), x.end()
+#define INS(x) inserter(x,x.begin())
 
 std::ofstream outputFile;
 UDPSocket udpSocket;
@@ -56,6 +60,58 @@ static std::vector<int> split(std::string str) {
     return result;
 }
 
+static std::set<int> split_2(std::string str) {
+  std::set<int> result;
+  std::string word = "";
+  for (auto x : str) {
+    if (x == ' ') {
+      word = "";
+    }
+    else {
+      word = word + x;
+      int num = std::stoi(word);
+      result.insert(num);
+    }
+  }
+  return result;
+}
+
+static std::vector<int> split_3(std::string str) {
+    str;
+  std::vector<int> result;
+
+  return result;
+}
+
+static std::set<int> simple_tokenizer(std::string s)
+{
+    std::set<int> result;
+    std::stringstream ss(s);
+    std::string word = ",";
+    while (ss >> word) {
+        std::cout << word << std::endl;
+        int num = std::stoi(word);
+        result.insert(num);
+    }
+    return result;
+}
+
+std::set<int> split_4(std::string strToSplit)
+{
+    char delimeter = ',';
+    std::stringstream ss(strToSplit);
+    std::string item;
+    std::set<int> splittedStrings;
+    while (std::getline(ss, item, delimeter))
+    {
+       splittedStrings.insert(std::stoi(item));
+    }
+    return splittedStrings;
+}
+
+
+
+
 static std::vector<std::vector<int>> read_config(std::ifstream config_file) {
   std::vector<std::vector<int>> lines_vector_form;
   if (config_file.is_open())
@@ -91,17 +147,7 @@ static std::vector<int> get_numbers(std::vector<std::vector<int>> numbers){
     return numbers_criteria;
 }
 
-static std::set<int> get_numbers_2(std::vector<std::vector<int>> numbers){
-    std::set<int> numbers_criteria;
-    std::vector<int> numbers_for_the_round = numbers[1];
-    for (auto i = numbers_for_the_round.begin(); i != numbers_for_the_round.end(); i++)
-    {
-        // std::cout << *i << std::endl;
-        numbers_criteria.insert(*i);
-    }
-    return numbers_criteria;
-}
- 
+
 
 int main(int argc, char **argv) {
   signal(SIGTERM, stop);
@@ -177,6 +223,7 @@ int main(int argc, char **argv) {
 
   std::string system_criteria = numbers_strs[0];
   numbers_strs = std::vector<std::string>(numbers_strs.begin()+1, numbers_strs.end());
+  std::string numbers = numbers_strs[0];
 // ===================================================================================================
 
   // For Perfect Links:
@@ -201,6 +248,20 @@ int main(int argc, char **argv) {
   // std::cout << processor.neighbors.size() << std::endl;
   processor.create();
 
+  // std::set<int> proposal = split_2(numbers);
+  // std::set<int> proposal = simple_tokenizer("1234,1234,");
+  // std::vector<std::string> proposal_strs = split_4("1234,1234");
+
+  std::set<int> proposal = split_4("1234,1235");
+  
+  std::cout << "==========================\n";
+
+  for (auto elem : proposal) {
+    std::cout << elem << std::endl;
+  }
+  // processor.propose(proposal);
+    
+
   // For Perfect Links
   // if this is not the receiving process, then it can broadcast the messages!
   // if (parser.id() != i) {
@@ -216,11 +277,11 @@ int main(int argc, char **argv) {
   //   }
   // }
 
-  for (std::string message : numbers_strs) {
-    for (auto &host : hosts) {
-      udpSocket.enque(host, message);
-    }
-  }
+  // for (std::string message : numbers_strs) {
+  //   for (auto &host : hosts) {
+  //     udpSocket.enque(host, message);
+  //   }
+  // }
  
   // process now needs to listen indefinitely - regardless if it broadcast messages before or not!
   while (true) {

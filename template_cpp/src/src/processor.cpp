@@ -17,11 +17,13 @@ When preparing the message, we need to add the type of the message, the proposal
 static std::string prepare_message(std::set<int> values, int proposal_num, std::string type) {
     std::string message = "";
 
-    message = type + std::to_string(proposal_num) + ",";
+    message = type + "," + std::to_string(proposal_num) + ",";
     
     for (std::set<int>::iterator it=values.begin(); it!=values.end(); ++it) {
         message = message + std::to_string(*it) + ",";
+        std::cout << "value: " << *it << std::endl;
     }
+    message.pop_back();
     
     return message;
 }
@@ -96,29 +98,27 @@ Processor::Processor(std::vector<Parser::Host> neighbors, Parser::Host localhost
     this->decisions = std::vector<std::string>();
 }
 
-void Processor::create() {
-    this->udp_socket.create();
-    // TODO : create thread for reception
-    
+Processor& Processor::operator=(const Processor& other) {
+    this->neighbors = other.neighbors;
+    this->number_of_neighbors = other.number_of_neighbors;
+    this->udp_socket = other.udp_socket;
+    this->active = other.active;
+    this->is_proposal = other.is_proposal;
+    this->is_ack = other.is_ack;
+    this->ack_count = other.ack_count;
+    this->nack_count = other.nack_count;
+    this->proposal_count = other.proposal_count;
+    this->proposed_values = other.proposed_values;
+    this->accepted_values = other.accepted_values;
+    this->decisions = other.decisions;
+    return *this;
 }
-
-void Processor::propose(std::set<int> values) {
-    this->proposed_values = values;
-    this->active = true;
-    this->proposal_count = this->proposal_count + 1;
-    // TODO : send proposal to all neighbors
-    std::string message = prepare_message(this->proposed_values, this->proposal_count, "PROPOSAL");
-    for (auto &host : this->neighbors) {
-      udp_socket.enque(host, message);
-    }
-}
-
 
 // TODO : implement reception method of processor
 void Processor::reception() {
     while (true) {
         Msg_Lattice msg = udp_socket.pop_buffer_received_messages();
-        if (msg == Msg_Lattice()) {
+        if (msg != Msg_Lattice()) {
             // TODO : parse message
             std::string message = msg.content;
             std::vector<std::string> message_parts = parse_message(message);
@@ -138,7 +138,8 @@ void Processor::reception() {
                     this->send_message(message, msg.sender);
                 }
                 else {
-                    this->accepted_values = std::set_union(this->accepted_values.begin(), this->accepted_values.end(), sent_proposed_values.begin(), sent_proposed_values.end(), this->accepted_values.begin());
+                    // this->accepted_values = std::set_union(this->accepted_values.begin(), this->accepted_values.end(), sent_proposed_values.begin(), sent_proposed_values.end(), this->accepted_values.begin());
+                    this->accepted_values.merge(sent_proposed_values);
                     // TODO : send NACK
                     std::string message = prepare_message(this->accepted_values, this->proposal_count, "NACK");
                     this->send_message(message, msg.sender);
@@ -148,13 +149,42 @@ void Processor::reception() {
             else if (message_type == "ACK" && this->proposal_count == std::stoi(message_proposal_number) && this->active) {
                 this->ack_count = this->ack_count + 1;
             }
-            // else if (message_type == "NACK" && this->proposal_count == std::stoi(message_proposal_number) && this->active) {
-            //     this->nack_count = this->nack_count + 1;
-            //     this->proposed_values = std::set_union(this->proposed_values.begin(), this->proposed_values.end(), sent_proposed_values.begin(), sent_proposed_values.end(), this->proposed_values.begin());
-            // }
+            else if (message_type == "NACK" && this->proposal_count == std::stoi(message_proposal_number) && this->active) {
+                this->nack_count = this->nack_count + 1;
+                // this->proposed_values = std::set_union(this->proposed_values.begin(), this->proposed_values.end(), sent_proposed_values.begin(), sent_proposed_values.end(), this->proposed_values.begin());
+                this->proposed_values.merge(sent_proposed_values);
+            }
         }
     }
 }
+
+void Processor::create() {
+    this->udp_socket.create();
+    // TODO : create thread for reception
+
+    // std::thread receive_thread(&Processor::reception, this);
+
+    // // send_thread.detach(); 
+    // receive_thread.detach();
+    
+}
+
+void Processor::propose(std::set<int> values) {
+    this->proposed_values = values;
+    this->active = true;
+    this->proposal_count = this->proposal_count + 1;
+    // TODO : send proposal to all neighbors
+    std::string message = "";
+    message = prepare_message(this->proposed_values, this->proposal_count, "PROPOSAL");
+
+    std::cout << "Sending proposal" << std::endl;
+    std::cout << message << std::endl;
+
+    for (auto &host : this->neighbors) {
+      udp_socket.enque(host, message);
+    }
+}
+
 
 void Processor::send_message(std::string message, Parser::Host host) {
     this->udp_socket.enque(host, message);
@@ -178,6 +208,8 @@ void Processor::vibe_check() {
         this->active = false;
     }
 }
+
+
 
 
 
