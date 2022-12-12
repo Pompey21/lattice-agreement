@@ -6,10 +6,10 @@
 #include <mutex>
 #include <set>
 #include "parser.hpp"
-#ifndef MESSAGE_HPP
-#define MESSAGE_HPP
+// #ifndef MESSAGE_LATTICE_HPP
+// #define MESSAGE_LATTICE_HPP
 #include "message_lattice.hpp"
-#endif
+// #endif
 
 /*
 Idea is to create an infrastructure for a basic UDP socket that can send and receive messages.
@@ -36,6 +36,7 @@ class UDPSocket {
         void enque(Parser::Host dest, std::string msg);
         std::vector<std::string> get_logs();
         UDPSocket& operator=(const UDPSocket & other);
+        Msg_Lattice pop_buffer_received_messages();
 
     private:
     // assignable:
@@ -47,9 +48,11 @@ class UDPSocket {
         std::set<std::string> logs_set;
         std::vector<Msg_Lattice> message_queue;
         std::mutex message_queue_lock;
+        std::mutex buffer_received_messaged_lock;
         std::set<std::string> broadcasted_messages;
 
         std::vector<Msg_Lattice> received_messages;
+        std::vector<Msg_Lattice> buffer_received_messages;
         int setup_socket(Parser::Host host);
         struct sockaddr_in set_up_destination_address(Parser::Host dest);
         

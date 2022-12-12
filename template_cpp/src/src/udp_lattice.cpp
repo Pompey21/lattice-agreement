@@ -140,6 +140,8 @@ void UDPSocket::receive_message() {
                 } else {
                     //otherwise, save it
                     received_messages.push_back(wrapped_message);
+                    buffer_received_messages.push_back(wrapped_message);
+                    
                     std::ostringstream oss;
                     // oss << "d " << wrapped_message.sender.id << " " << std::endl;//<< wrapped_message.content;
                     oss << "d " << wrapped_message.content << " " << std::endl;
@@ -159,6 +161,7 @@ void UDPSocket::receive_message() {
         }
     }
 }
+
 
 int UDPSocket::setup_socket(Parser::Host host) {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -188,4 +191,16 @@ std::string UDPSocket::prepare_content_for_print(std::set<int> content) {
         oss << msg << " ";
     }
     return oss.str();
+}
+
+
+Msg_Lattice UDPSocket::pop_buffer_received_messages(){
+    Msg_Lattice first_message;
+    if (buffer_received_messages.size() > 0) {
+        buffer_received_messaged_lock.lock();
+        first_message = buffer_received_messages.front();
+        buffer_received_messages.erase(buffer_received_messages.begin());
+        buffer_received_messaged_lock.unlock();
+    }
+    return first_message;
 }

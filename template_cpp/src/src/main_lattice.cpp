@@ -11,10 +11,12 @@
 // #include "beb.hpp"
 #include "hello.h"
 #include <signal.h>
+#include "processor.hpp"
 
 std::ofstream outputFile;
 UDPSocket udpSocket;
 // BEBSocket bebSocket;
+Processor processor;
 
 static void stop(int) {
   // reset signal handlers to default
@@ -128,7 +130,7 @@ int main(int argc, char **argv) {
 
   std::cout << "List of resolved hosts is:\n";
   std::cout << "==========================\n";
-  auto hosts = parser.hosts();
+  std::vector<Parser::Host> hosts = parser.hosts();
   for (auto &host : hosts) {
     std::cout << host.id << "\n";
     std::cout << "Human-readable IP: " << host.ipReadable() << "\n";
@@ -153,50 +155,28 @@ int main(int argc, char **argv) {
   std::cout << "Broadcasting and delivering messages...\n\n";
 
   std::ifstream config_file(parser.configPath());
-// ===================================================================================================
-  // std::vector<std::vector<int>> lines_vector_form;
-  // if (config_file.is_open())
-  //   {
-  //       std::string line;
 
-  //       while(getline(config_file, line))
-  //      {
-  //           if(line.size() > 0){
-  //               // vecOfStrs.push_back(str);
-  //               // std::cout << line << std::endl;
-  //               std::vector<int> line_vector_form = split(line);
-  //               lines_vector_form.push_back(line_vector_form);
-  //           }
-  //       }
-  //   }
-  //   else 
-  //   {
-  //       std::cerr << "Couldn't open config file for reading.\n";
-  //   }
+  std::vector<std::string> numbers_strs;
+  if (config_file.is_open())
+  {
+      std::string line;
 
-    // std::vector<int> numbers = get_numbers(lines_vector_form);
-// ===================================================================================================
-    std::vector<std::string> numbers_strs;
-    if (config_file.is_open())
-    {
-        std::string line;
+      while(getline(config_file, line))
+     {
+          if(line.size() > 0){
+              // vecOfStrs.push_back(str);
+              std::cout << line << std::endl;
+              numbers_strs.push_back(line);
+          }
+      }
+  }
+  else 
+  {
+      std::cerr << "Couldn't open config file for reading.\n";
+  }
 
-        while(getline(config_file, line))
-       {
-            if(line.size() > 0){
-                // vecOfStrs.push_back(str);
-                std::cout << line << std::endl;
-                numbers_strs.push_back(line);
-            }
-        }
-    }
-    else 
-    {
-        std::cerr << "Couldn't open config file for reading.\n";
-    }
-
-    std::string system_criteria = numbers_strs[0];
-    numbers_strs = std::vector<std::string>(numbers_strs.begin()+1, numbers_strs.end());
+  std::string system_criteria = numbers_strs[0];
+  numbers_strs = std::vector<std::string>(numbers_strs.begin()+1, numbers_strs.end());
 // ===================================================================================================
 
   // For Perfect Links:
@@ -209,11 +189,17 @@ int main(int argc, char **argv) {
   config_file.close();
 //==================================================================================================
 //==================================================================================================
+  // auto processor = Processor(hosts, hosts[parser.id()-1]);
 
   // create a socket for that given process!
-  udpSocket = UDPSocket(hosts[parser.id()-1]);
-  // start the socket -> we create two threads, one for sending and one for receiving
-  udpSocket.create();
+  // udpSocket = UDPSocket(hosts[parser.id()-1]);
+  // // start the socket -> we create two threads, one for sending and one for receiving
+  // udpSocket.create();
+
+  processor = Processor(hosts, hosts[parser.id()-1]);
+  std::cout << "Processor created" << std::endl;
+  // std::cout << processor.neighbors.size() << std::endl;
+  processor.create();
 
   // For Perfect Links
   // if this is not the receiving process, then it can broadcast the messages!
