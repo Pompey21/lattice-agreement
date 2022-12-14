@@ -33,7 +33,12 @@ static void stop(int) {
   // write/flush output file if necessary
   std::cout << "Writing output.\n";
 
-  for(auto const &output: udpSocket.get_logs()){
+  // for(auto const &output: udpSocket.get_logs()){
+  //   outputFile << output << "\n" ;
+  // }
+  // outputFile.close();
+
+  for(auto const &output: processor.get_decision_logs()){
     outputFile << output << "\n" ;
   }
   outputFile.close();

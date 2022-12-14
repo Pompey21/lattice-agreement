@@ -129,6 +129,7 @@ Processor::Processor(std::vector<Parser::Host> neighbors, Parser::Host localhost
     this->accepted_values = std::set<int>();
     this->decisions = std::vector<std::string>();
     this->decided = false;
+    this->decision_logs = std::vector<std::string>();
 }
 
 Processor& Processor::operator=(const Processor& other) {
@@ -262,11 +263,16 @@ void Processor::vibe_check() {
         this->active = false;
         this->decided = true; 
         std::cout << "decided on: " << this->decided << std::endl;
+        this->decision_logs.push_back(message_to_write);
     }
 }
 
 bool Processor::is_decided() {
     return this->decided;
+}
+
+std::vector<std::string> Processor::get_decision_logs() {
+    return this->decision_logs;
 }
 
 

@@ -20,6 +20,7 @@ class Processor {
         void send_message(std::string message, Parser::Host host);
         void reception();
         bool is_decided();
+        std::vector<std::string> get_decision_logs();
 
 
     private:
@@ -39,4 +40,5 @@ class Processor {
         std::vector<Parser::Host> neighbors;
         std::vector<std::string> decisions;
         bool decided;
+        std::vector<std::string> decision_logs;
 };
