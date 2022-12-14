@@ -195,7 +195,7 @@ std::string UDPSocket::prepare_content_for_print(std::set<int> content) {
 
 
 Msg_Lattice UDPSocket::pop_buffer_received_messages(){
-    Msg_Lattice first_message;
+    Msg_Lattice first_message = Msg_Lattice();
     if (buffer_received_messages.size() > 0) {
         buffer_received_messaged_lock.lock();
         first_message = buffer_received_messages.front();

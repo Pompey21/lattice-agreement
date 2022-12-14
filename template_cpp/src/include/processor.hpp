@@ -19,6 +19,7 @@ class Processor {
         void vibe_check();
         void send_message(std::string message, Parser::Host host);
         void reception();
+        bool is_decided();
 
 
     private:
@@ -37,4 +38,5 @@ class Processor {
         unsigned long number_of_neighbors;
         std::vector<Parser::Host> neighbors;
         std::vector<std::string> decisions;
+        bool decided;
 };

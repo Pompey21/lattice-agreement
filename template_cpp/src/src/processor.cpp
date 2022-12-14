@@ -15,6 +15,7 @@
 When preparing the message, we need to add the type of the message, the proposal number and the values
 */
 static std::string prepare_message(std::set<int> values, int proposal_num, std::string type) {
+    std::cout << "Prepare_message method()" << std::endl;
     std::string message = "";
 
     message = type + "," + std::to_string(proposal_num) + ",";
@@ -24,6 +25,8 @@ static std::string prepare_message(std::set<int> values, int proposal_num, std::
         std::cout << "value: " << *it << std::endl;
     }
     message.pop_back();
+
+    std::cout << "------END-------" << std::endl;
     
     return message;
 }
@@ -53,6 +56,21 @@ static std::vector<std::string> parse_message(std::string message) {
     return tokens;
 }
 
+static std::vector<std::string> parse_message_2(std::string strToSplit)
+{
+    char delimeter = ',';
+    std::stringstream ss(strToSplit);
+    std::string item;
+    std::vector<std::string> splittedStrings;
+    while (std::getline(ss, item, delimeter))
+    {
+       splittedStrings.push_back(item);
+    }
+    return splittedStrings;
+}
+
+
+
 
 static std::set<int> parse_message_get_numbers(std::vector<std::string> tokens) {
     tokens.erase(tokens.begin());
@@ -72,6 +90,20 @@ static std::string parse_message_get_proposal_number(std::vector<std::string> to
     return tokens[1];
 }
 
+
+static std::set<int> parse_message_get_numbers_2(std::vector<std::string> strToSplit)
+{
+    strToSplit.erase(strToSplit.begin());
+    strToSplit.erase(strToSplit.begin());
+    std::set<int> result;
+    int item;
+    for (auto it = strToSplit.begin(); it != strToSplit.end(); ++it) {
+        item = std::stoi(*it);
+        // std::cout << "item: " << item << std::endl;
+        result.insert(item);
+    }
+    return result;
+}
 //==================================================================================================
 //==================================================================================================
 
@@ -96,6 +128,7 @@ Processor::Processor(std::vector<Parser::Host> neighbors, Parser::Host localhost
     this->proposed_values = std::set<int>();
     this->accepted_values = std::set<int>();
     this->decisions = std::vector<std::string>();
+    this->decided = false;
 }
 
 Processor& Processor::operator=(const Processor& other) {
@@ -121,16 +154,36 @@ void Processor::reception() {
         if (msg != Msg_Lattice()) {
             // TODO : parse message
             std::string message = msg.content;
-            std::vector<std::string> message_parts = parse_message(message);
+            std::vector<std::string> message_parts = parse_message_2(message);
+
+            std::cout << "message received: " << message << std::endl;
+            std::cout << "length: " << message_parts.size() << std::endl;
+            // std::cout << "message parts: " << message_parts[2] << std::endl;
+
 
             std::string message_type = parse_message_get_type(message_parts);
-            std::string message_proposal_number = parse_message_get_proposal_number(message_parts);
+            std::cout << "message type: " << message_type << std::endl;
 
-            std::set<int> sent_proposed_values = parse_message_get_numbers(message_parts); // these are the values
+            std::string message_proposal_number = parse_message_get_proposal_number(message_parts);
+            std::cout << "message proposal number: " << message_proposal_number << std::endl;
+
+            std::cout << "=========" << std::endl;
+            std::cout << "message parts: " << message_parts[2] << std::endl;
+            std::cout << "message parts: " << message_parts[3] << std::endl;
+            std::cout << "=========" << std::endl;
+
+
+            std::set<int> sent_proposed_values = parse_message_get_numbers_2(message_parts); // these are the values
+            std::cout << "number of numbers sent: " << sent_proposed_values.size() << std::endl;
+            std::cout << "message proposed values: " << std::endl;
+            for (std::set<int>::iterator it=sent_proposed_values.begin(); it!=sent_proposed_values.end(); ++it) {
+                std::cout << *it << std::endl;
+            }
             
 
             if (message_type == "PROPOSAL") {
-                if (std::includes(this->accepted_values.begin(), this->accepted_values.end(), sent_proposed_values.begin(), sent_proposed_values.end())) {
+                // if (std::includes(this->accepted_values.begin(), this->accepted_values.end(), sent_proposed_values.begin(), sent_proposed_values.end())) {
+                if (std::includes(sent_proposed_values.begin(), sent_proposed_values.end(), this->accepted_values.begin(), this->accepted_values.end())) {
                     this->accepted_values = sent_proposed_values;
                     // TODO : send ACK
                     // prepare the message
@@ -162,10 +215,10 @@ void Processor::create() {
     this->udp_socket.create();
     // TODO : create thread for reception
 
-    // std::thread receive_thread(&Processor::reception, this);
+    std::thread receive_thread(&Processor::reception, this);
 
-    // // send_thread.detach(); 
-    // receive_thread.detach();
+    // send_thread.detach(); 
+    receive_thread.detach();
     
 }
 
@@ -209,7 +262,9 @@ void Processor::vibe_check() {
     }
 }
 
-
+bool Processor::is_decided() {
+    return this->decided;
+}
 
 
 

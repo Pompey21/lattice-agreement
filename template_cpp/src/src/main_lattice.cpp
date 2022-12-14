@@ -60,42 +60,6 @@ static std::vector<int> split(std::string str) {
     return result;
 }
 
-static std::set<int> split_2(std::string str) {
-  std::set<int> result;
-  std::string word = "";
-  for (auto x : str) {
-    if (x == ' ') {
-      word = "";
-    }
-    else {
-      word = word + x;
-      int num = std::stoi(word);
-      result.insert(num);
-    }
-  }
-  return result;
-}
-
-static std::vector<int> split_3(std::string str) {
-    str;
-  std::vector<int> result;
-
-  return result;
-}
-
-static std::set<int> simple_tokenizer(std::string s)
-{
-    std::set<int> result;
-    std::stringstream ss(s);
-    std::string word = ",";
-    while (ss >> word) {
-        std::cout << word << std::endl;
-        int num = std::stoi(word);
-        result.insert(num);
-    }
-    return result;
-}
-
 std::set<int> split_4(std::string strToSplit)
 {
     char delimeter = ',';
@@ -211,7 +175,7 @@ int main(int argc, char **argv) {
      {
           if(line.size() > 0){
               // vecOfStrs.push_back(str);
-              std::cout << line << std::endl;
+              // std::cout << line << std::endl;
               numbers_strs.push_back(line);
           }
       }
@@ -248,19 +212,19 @@ int main(int argc, char **argv) {
   // std::cout << processor.neighbors.size() << std::endl;
   processor.create();
 
-  // std::set<int> proposal = split_2(numbers);
-  // std::set<int> proposal = simple_tokenizer("1234,1234,");
   // std::vector<std::string> proposal_strs = split_4("1234,1234");
 
   std::set<int> proposal = split_4("1234,1235");
   
   std::cout << "==========================\n";
 
-  for (auto elem : proposal) {
-    std::cout << elem << std::endl;
-  }
-  // processor.propose(proposal);
-    
+  // for (auto elem : proposal) {
+  //   std::cout << elem << std::endl;
+  // }
+
+  processor.propose(proposal);
+
+  while (!processor.is_decided()){}
 
   // For Perfect Links
   // if this is not the receiving process, then it can broadcast the messages!
