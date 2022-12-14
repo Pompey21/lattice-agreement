@@ -170,8 +170,8 @@ void Processor::reception() {
             std::cout << "message proposal number: " << message_proposal_number << std::endl;
 
             std::cout << "=========" << std::endl;
-            std::cout << "message parts: " << message_parts[2] << std::endl;
-            std::cout << "message parts: " << message_parts[3] << std::endl;
+            // std::cout << "message parts: " << message_parts[2] << std::endl;
+            // std::cout << "message parts: " << message_parts[3] << std::endl;
             std::cout << "=========" << std::endl;
 
 
