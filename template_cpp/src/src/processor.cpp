@@ -157,7 +157,8 @@ void Processor::reception() {
             std::string message = msg.content;
             std::vector<std::string> message_parts = parse_message_2(message);
 
-            std::cout << "message received: " << message << std::endl;
+
+            std::cout << "\nMessage received: " << message << std::endl;
             std::cout << "length: " << message_parts.size() << std::endl;
             // std::cout << "message parts: " << message_parts[2] << std::endl;
 
@@ -175,6 +176,7 @@ void Processor::reception() {
 
 
             std::set<int> sent_proposed_values = parse_message_get_numbers_2(message_parts); // these are the values
+            
             std::cout << "number of numbers sent: " << sent_proposed_values.size() << std::endl;
             std::cout << "message proposed values: " << std::endl;
             for (std::set<int>::iterator it=sent_proposed_values.begin(); it!=sent_proposed_values.end(); ++it) {
@@ -209,6 +211,7 @@ void Processor::reception() {
                 this->proposed_values.merge(sent_proposed_values);
             }
             this->vibe_check();
+            std::cout << "Reception Completed\n" << std::endl;
         }
     }
 }
@@ -229,15 +232,21 @@ void Processor::propose(std::set<int> values) {
     this->active = true;
     this->proposal_count = this->proposal_count + 1;
     // TODO : send proposal to all neighbors
+    std::cout << "-----------------" << std::endl;
+    std::cout << "Sending proposal!" << std::endl;
+
     std::string message = "";
     message = prepare_message(this->proposed_values, this->proposal_count, "PROPOSAL");
 
-    std::cout << "Sending proposal" << std::endl;
+    
     std::cout << message << std::endl;
 
     for (auto &host : this->neighbors) {
       udp_socket.enque(host, message);
     }
+
+    std::cout << "Proposal sent!" << std::endl;
+    std::cout << "-----------------\n" << std::endl;
 }
 
 

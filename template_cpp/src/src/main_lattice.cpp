@@ -67,7 +67,8 @@ static std::vector<int> split(std::string str) {
 
 std::set<int> split_4(std::string strToSplit)
 {
-    char delimeter = ',';
+    // char delimeter = ',';
+    char delimeter = ' ';
     std::stringstream ss(strToSplit);
     std::string item;
     std::set<int> splittedStrings;
@@ -190,9 +191,17 @@ int main(int argc, char **argv) {
       std::cerr << "Couldn't open config file for reading.\n";
   }
 
+  // tells us : number of rounds | max number of messages per process | max number of messages per round
   std::string system_criteria = numbers_strs[0];
+
+  // tells us : the numbers to be sent for each round
   numbers_strs = std::vector<std::string>(numbers_strs.begin()+1, numbers_strs.end());
   std::string numbers = numbers_strs[0];
+  std::cout << "*************************" << std::endl;
+  std::cout << "This process starts the round proposing the following numbers:" << std::endl;
+  std::cout << numbers << std::endl;
+  std::cout << "*************************\n" << std::endl;
+
 // ===================================================================================================
 
   // For Perfect Links:
@@ -205,8 +214,6 @@ int main(int argc, char **argv) {
   config_file.close();
 //==================================================================================================
 //==================================================================================================
-  // auto processor = Processor(hosts, hosts[parser.id()-1]);
-
   // create a socket for that given process!
   // udpSocket = UDPSocket(hosts[parser.id()-1]);
   // // start the socket -> we create two threads, one for sending and one for receiving
@@ -219,7 +226,7 @@ int main(int argc, char **argv) {
 
   // std::vector<std::string> proposal_strs = split_4("1234,1234");
 
-  std::set<int> proposal = split_4("1234,1235");
+  std::set<int> proposal = split_4(numbers);
   
   std::cout << "==========================\n";
 
