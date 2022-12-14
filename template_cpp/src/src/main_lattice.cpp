@@ -226,6 +226,8 @@ int main(int argc, char **argv) {
 
   while (!processor.is_decided()){}
 
+  std::cout << "HASTA LA VISTA BABY" << std::endl;
+
   // For Perfect Links
   // if this is not the receiving process, then it can broadcast the messages!
   // if (parser.id() != i) {

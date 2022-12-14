@@ -207,6 +207,7 @@ void Processor::reception() {
                 // this->proposed_values = std::set_union(this->proposed_values.begin(), this->proposed_values.end(), sent_proposed_values.begin(), sent_proposed_values.end(), this->proposed_values.begin());
                 this->proposed_values.merge(sent_proposed_values);
             }
+            this->vibe_check();
         }
     }
 }
@@ -259,6 +260,8 @@ void Processor::vibe_check() {
         std::string message_to_write = prepare_message_for_writing(this->proposed_values);
         this->decisions.push_back(message_to_write);
         this->active = false;
+        this->decided = true; 
+        std::cout << "decided on: " << this->decided << std::endl;
     }
 }
 
