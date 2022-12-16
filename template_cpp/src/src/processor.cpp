@@ -120,14 +120,11 @@ Processor::Processor(std::vector<Parser::Host> neighbors, Parser::Host localhost
 
 
     this->active = false;
-    this->is_proposal = true;
-    this->is_ack = false;
     this->ack_count = 0;
     this->nack_count = 0;
     this->proposal_count = 0;
     this->proposed_values = std::set<int>();
     this->accepted_values = std::set<int>();
-    this->decisions = std::vector<std::string>();
     this->decided = false;
     this->decision_logs = std::vector<std::string>();
     this->decided_lock;
@@ -138,14 +135,11 @@ Processor& Processor::operator=(const Processor& other) {
     this->number_of_neighbors = other.number_of_neighbors;
     this->udp_socket = other.udp_socket;
     this->active = other.active;
-    this->is_proposal = other.is_proposal;
-    this->is_ack = other.is_ack;
     this->ack_count = other.ack_count;
     this->nack_count = other.nack_count;
     this->proposal_count = other.proposal_count;
     this->proposed_values = other.proposed_values;
     this->accepted_values = other.accepted_values;
-    this->decisions = other.decisions;
     return *this;
 }
 
@@ -287,7 +281,6 @@ void Processor::vibe_check() {
     else if (this->ack_count >= f_1 && this->active) {
         // TODO : decide on the values
         std::string message_to_write = prepare_message_for_writing(this->proposed_values);
-        this->decisions.push_back(message_to_write);
         this->active = false;
         this->decided_lock.lock();
         this->decided = true; 
