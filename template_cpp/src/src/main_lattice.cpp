@@ -236,7 +236,10 @@ int main(int argc, char **argv) {
 
   processor.propose(proposal);
 
-  while (!processor.is_decided()){}
+  while (!processor.is_decided()){
+    std::this_thread::sleep_for (std::chrono::milliseconds(100));
+    // processor.vibe_check();
+  }
 
   std::cout << "HASTA LA VISTA BABY" << std::endl;
 

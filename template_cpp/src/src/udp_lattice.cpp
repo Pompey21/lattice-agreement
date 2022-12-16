@@ -193,6 +193,10 @@ std::string UDPSocket::prepare_content_for_print(std::set<int> content) {
     return oss.str();
 }
 
+Parser::Host UDPSocket::get_localhost() {
+    return this->localhost;
+}
+
 
 Msg_Lattice UDPSocket::pop_buffer_received_messages(){
     Msg_Lattice first_message = Msg_Lattice();

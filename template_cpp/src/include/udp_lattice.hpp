@@ -37,6 +37,7 @@ class UDPSocket {
         std::vector<std::string> get_logs();
         UDPSocket& operator=(const UDPSocket & other);
         Msg_Lattice pop_buffer_received_messages();
+        Parser::Host get_localhost();
 
     private:
     // assignable:

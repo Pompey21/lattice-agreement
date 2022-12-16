@@ -3,6 +3,7 @@
 
 #include <set>
 #include <vector>
+#include <mutex>
 
 class Processor {
     public:
@@ -39,6 +40,7 @@ class Processor {
         unsigned long number_of_neighbors;
         std::vector<Parser::Host> neighbors;
         std::vector<std::string> decisions;
+        std::mutex decided_lock;
         bool decided;
         std::vector<std::string> decision_logs;
 };
