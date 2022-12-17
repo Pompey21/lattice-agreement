@@ -2,7 +2,7 @@
 # You can, however, change the list of files that comprise this variable.
 
 include_directories(include)
-set(SOURCES src/main_lattice.cpp src/hello.c src/udp_lattice.cpp src/processor.cpp)
+set(SOURCES src/main_lattice_upgrade.cpp src/hello.c src/udp_lattice.cpp src/processor_3.cpp src/shot.cpp)
 
 # DO NOT EDIT THE FOLLOWING LINES
 find_package(Threads)
