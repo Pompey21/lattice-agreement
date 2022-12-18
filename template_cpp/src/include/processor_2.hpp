@@ -18,10 +18,11 @@ class Processor {
         Processor& operator=(const Processor & other);
 
         void create();
-        void propose(std::vector<std::set<int>> multi_shot);
-        void vibe_check();
+        void propose(Shot shot);
+        void vibe_check(Shot shot);
         void reception();
         bool is_decided();
+        void send_message(std::string message, Parser::Host host);
 
         std::vector<std::string> get_decision_logs();
 

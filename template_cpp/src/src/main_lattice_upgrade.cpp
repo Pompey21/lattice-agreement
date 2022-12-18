@@ -39,14 +39,9 @@ static void stop(int) {
   // write/flush output file if necessary
   std::cout << "Writing output.\n";
 
-  // for(auto const &output: udpSocket.get_logs()){
-  //   outputFile << output << "\n" ;
-  // }
-  // outputFile.close();
-
-//   for(auto const &output: processor.get_decision_logs()){
-//     outputFile << output << "\n" ;
-//   }
+  for(auto const &output: processor.get_decision_logs()){
+    outputFile << output << "\n" ;
+  }
   outputFile.close();
   
   // exit directly from signal handler
@@ -227,54 +222,21 @@ int main(int argc, char **argv) {
   }
 
   Processor processor = Processor(hosts, hosts[parser.id()-1], shots);
-
-
-
-
-  
-//   std::set<int> numbers_set = split_4(numbers);
-//   Shot shot = Shot(1, numbers_set);
-//   std::cout << "Shot created" << std::endl;
-//   std::cout << shot.proposed_values.size() << std::endl;
-
-// ===================================================================================================
-
-  // For Perfect Links:
-  // config_file >> m >> i;
-
-  // For Best Effort Broadcast:
-  // config_file >> m;
-
+    std::cout << "Processor created" << std::endl;
+    processor.create();
 
   config_file.close();
-//==================================================================================================
-//==================================================================================================
-  // create a socket for that given process!
-  // udpSocket = UDPSocket(hosts[parser.id()-1]);
-  // // start the socket -> we create two threads, one for sending and one for receiving
-  // udpSocket.create();
 
-//   processor = Processor(hosts, hosts[parser.id()-1]);
-//   std::cout << "Processor created" << std::endl;
-//   // std::cout << processor.neighbors.size() << std::endl;
-//   processor.create();
+  // TODO : for every shot, propose to all neighbours!
+  for (auto shot : shots) {
+    std::cout << "Proposing shot " << shot.first << std::endl;
+    processor.propose(shot.second);
+  }
 
-//   // std::vector<std::string> proposal_strs = split_4("1234,1234");
-
-//   std::set<int> proposal = split_4(numbers);
-  
-//   std::cout << "==========================\n";
-
-//   // for (auto elem : proposal) {
-//   //   std::cout << elem << std::endl;
-//   // }
-
-//   processor.propose(proposal);
-
-//   while (!processor.is_decided()){
-//     std::this_thread::sleep_for (std::chrono::milliseconds(100));
-//     // processor.vibe_check();
-//   }
+  while (!processor.is_decided()){
+    std::this_thread::sleep_for (std::chrono::milliseconds(100));
+    // processor.vibe_check();
+  }
 
   std::cout << "HASTA LA VISTA BABY" << std::endl;
 
